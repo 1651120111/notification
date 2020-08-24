@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="b95ae91c-99de-451b-a14a-ef769e489069" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="ProjectId" id="1gLVnLITRRrz1kxtTsu9RWvjo9c" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../mongdaovan86" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="Settings.Markdown" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b95ae91c-99de-451b-a14a-ef769e489069" name="Default Changelist" comment="" />
+      <created>1597892715648</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1597892715648</updated>
+      <workItem from="1597892716700" duration="987000" />
+      <workItem from="1597894026324" duration="6092000" />
+      <workItem from="1597905234502" duration="13329000" />
+      <workItem from="1597974193731" duration="12275000" />
+      <workItem from="1597991895252" duration="11475000" />
+      <workItem from="1598060589643" duration="11144000" />
+      <workItem from="1598077960378" duration="14664000" />
+      <workItem from="1598233469187" duration="8413000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="721" y="257" width="530" height="598" key="FileChooserDialogImpl" timestamp="1598070298065">
+      <screen x="63" y="34" width="1857" height="1046" />
+    </state>
+    <state x="721" y="257" width="530" height="598" key="FileChooserDialogImpl/63.34.1857.1046@63.34.1857.1046" timestamp="1598070298065" />
+    <state x="757" y="467" width="458" height="178" key="NewPhpFileDialog" timestamp="1598242735767">
+      <screen x="63" y="34" width="1857" height="1046" />
+    </state>
+    <state x="757" y="467" width="458" height="178" key="NewPhpFileDialog/63.34.1857.1046@63.34.1857.1046" timestamp="1598242735767" />
+    <state x="356" y="103" key="SettingsEditor" timestamp="1597894169056">
+      <screen x="63" y="34" width="1857" height="1046" />
+    </state>
+    <state x="356" y="103" key="SettingsEditor/63.34.1857.1046@63.34.1857.1046" timestamp="1597894169056" />
+    <state x="571" y="251" key="run.anything.popup" timestamp="1598237549972">
+      <screen x="63" y="34" width="1857" height="1046" />
+    </state>
+    <state x="571" y="251" key="run.anything.popup/63.34.1857.1046@63.34.1857.1046" timestamp="1598237549972" />
+  </component>
+</project>
