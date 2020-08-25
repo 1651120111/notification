@@ -124,16 +124,16 @@ room {
 
         });
 
-    function getTotalNumberPage(n, perPage){
-        return  Math.ceil(n/perPage);
+    function getNumberPage(total ,perPage){
+        return Math.ceil(total/perPage);
     }
 
     // Object.keys(data).length kiem tra Object co trong hay khong?
     function getPage( page = 1,perPage = 5, totalRecord = 0){
         if ( currentPage === undefined || currentPage == 1){
-            return {page : 0,perPage};
-        } else if (page > Math.ceil(totalRecord/perPage)){
-            return  {page : Math.ceil(totalRecord/perPage)*perPage-perPage,perPage};
+            return {page : 1,perPage};
+        } else if (page > getNumberPage(totalRecord,perPage)){
+            return  {page : getNumberPage(totalRecord,perPage)*perPage-perPage,perPage};
         } else {
             return {page: parseInt(currentPage)*perPage-perPage,perPage};
         }
