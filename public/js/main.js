@@ -34,13 +34,28 @@ const db = firebase.database();
 // Gui tin nhan
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
+
     // Lay tin nhan tu form send
     const msg = document.getElementById('msg').value;
-    db.ref(room + '/message').push().set({
-        "sender": username,
-        "message": msg,
-        "date": time
-    });
+
+    if (username == 'admin'){
+        db.ref(room + '/message').push().set({
+            "sender": username,
+            "message": msg,
+            "date": time,
+            "seen_by_user" : false,
+            "seen_by_admin" : true,
+        });
+    } else {
+        db.ref(room + '/message').push().set({
+            "sender": username,
+            "message": msg,
+            "date": time,
+            "seen_by_user" : true,
+            "seen_by_admin" : false,
+        });
+    }
+
 
 });
 
@@ -140,7 +155,6 @@ db.ref(room + "/message").limitToLast(10).on("child_added", function (data) {
     if (data1.sender == username) {
         className = 'username';
     }
-    // console.log(data1);
     message.innerHTML +=
         '<div class="message ' + className + '" id="message ">' +
         '<p class="meta">' + data1.sender + ' <span>' + data1.date + '</span></p>' +
@@ -218,3 +232,50 @@ function getPage(page = 1, perPage = 5, totalRecord = 0) {
         return {page: parseInt(page) * perPage - perPage, perPage};
     }
 }
+
+
+document.addEventListener("visibilitychange", handleVisibilityChange, false);
+
+function handleVisibilityChange(){
+    if (document.visibilityState === 'hidden') {
+        console.log(1);
+    } else{
+        console.log(2);
+        // chuyen trang thai seen_by_host : false => true
+        switch (username) {
+            case "admin":
+                firebase.database().ref(room+'/message').orderByChild('seen_by_admin').equalTo(false).on('value',function (snapshot){
+                    if (snapshot.val() != null) {
+                        const data2 = Object.keys(snapshot.val());
+                        for (let i in data2) {
+                            firebase.database().ref(room+'/message/' + data2[i]).update({
+                                'seen_by_admin': true,
+                            });
+                        }
+                    }
+                });
+                break;
+            case "1651120111":
+                firebase.database().ref(room+'/message').orderByChild('seen_by_user').equalTo(false).on('value',function (snapshot){
+                    if (snapshot.val() != null) {
+                        const data2 = Object.keys(snapshot.val());
+                        for ( let i in data2) {
+                            firebase.database().ref(room+'/message/' + data2[i]).update({
+                                'seen_by_user': true,
+                            });
+                        }
+                    }
+                });
+                break;
+        }
+
+
+        /*getNumberMessageUnReadByHost().then(data => {
+            firebase.database().ref('JavaScript/read').update({
+                'count_admin' : data,
+                'count_user' : 5,
+            })
+        })*/
+    }
+}
+

@@ -118,7 +118,7 @@ room {
                 .endAt(data3[length-getPage(data.page,5,length).page].date,
                     data2[length-getPage(data.page,5,length).page]).limitToLast(getPage(data.page,5,length).perPage)
                 .on('child_added', function(snapshot) {
-                    console.log(snapshot.val());
+                    //console.log(snapshot.val());
                 });
             /**/
 
@@ -139,12 +139,86 @@ room {
         }
     }
 
-    firebase.database().ref('users1/2').set({
-        username: 'nhan1',
-        email: 'nhan1@gmail.com',
-        profile_picture : 'nhan1'
-    });
+    //tin nhan chua doc
 
+    function getNumberMessageUnReadByHost(){
+        return new Promise(resolve => {
+            firebase.database().ref("JavaScript/message").orderByChild('seen_by_host')
+                .equalTo(false).on('value', function (snapshot) {
+                   if (snapshot.val() != null){
+                    resolve(Object.keys(snapshot.val()).length)
+                   } else {
+                       resolve(5)
+                   }
+            })
+        })
+
+    }
+    /*getNumberMessageUnReadByHost().then(data => {
+        firebase.database().ref('JavaScript/read').set({})
+    })*/
+
+    // Neu tin nhan dau tien da doc thi cho read/admin ||read/user : false => true
+    firebase.database().ref('JavaScript/message').limitToFirst(1).on('child_added',function (snapshot){
+        const data = snapshot.val();
+        if (data.seen_by_host == true){
+            firebase.database().ref('JavaScript/read').update({
+                'admin':true,
+            });
+        }
+        else {
+            firebase.database().ref('JavaScript/read').update({
+                'admin': false,
+            });
+        }
+        if (data.seen_by_user == true){
+            firebase.database().ref('JavaScript/read').update({
+                'user':true,
+            });
+        } else {
+            firebase.database().ref('JavaScript/read').update({
+                'user':false,
+            });
+        }
+    })
+
+    // check co o  tab hien tai hay khong
+     document.addEventListener("visibilitychange", function() {
+
+         if (document.visibilityState === 'visible') {
+             // chuyen trang thai seen_by_host : false => true
+             firebase.database().ref('JavaScript/message').orderByChild('seen_by_host').equalTo(false).on('value',function (snapshot){
+                 if (snapshot.val() != null) {
+                     const data2 = Object.keys(snapshot.val());
+                     for (i in data2) {
+                         firebase.database().ref('JavaScript/message/' + data2[i]).update({
+                             'seen_by_host': true,
+                         });
+                     }
+                 }
+             })
+
+             getNumberMessageUnReadByHost().then(data => {
+                 firebase.database().ref('JavaScript/read').update({
+                     'count_admin' : data,
+                     'count_user' : 5,
+                 })
+             })
+         } else {
+             firebase.database().ref('JavaScript/read').update({
+                 'count_admin': 3,
+                 'count_user' :2,
+             })
+
+         }
+     });
+
+    /*firebase.database().ref('read').set({
+        'admin':false,
+        'user':false,
+        'count_admin': 0,
+        'count_user' :0,
+    })*/
 </script>
 
 
