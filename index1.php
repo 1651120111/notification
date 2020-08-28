@@ -79,10 +79,6 @@ room {
         console.log(data2);
         });*/
 
-    firebase.database().ref("JavaScript/message").orderByChild('sender').equalTo('1').limitToFirst(2)
-        .on('child_added', function(snapshot) {
-            //console.log(snapshot.val());
-        });
 
     const data = Qs.parse(location.search, {
         ignoreQueryPrefix: true
@@ -219,6 +215,29 @@ room {
         'count_admin': 0,
         'count_user' :0,
     })*/
+
+    firebase.database().ref('JavaScript/message').orderByChild('seen_by_admin').equalTo(true).limitToLast(1).on('value',function (snapshot) {
+        //console.log(snapshot.val());
+        const data = snapshot.val();
+        const key = Object.keys(data);
+        const values = Object.values(data);
+        const length = values.length;
+        console.log(data);
+        //console.log(values)
+
+
+
+    })
+    firebase.database().ref('JavaScript/message').orderByChild('seen_by_user').equalTo(true).limitToLast(1).on('value',function (snapshot) {
+        //console.log(snapshot.val());
+        const data = snapshot.val();
+        const key = Object.keys(data);
+        const values = Object.values(data);
+        const length = values.length;
+        console.log(key[0]);
+        //console.log(values)
+
+    })
 </script>
 
 

@@ -30,6 +30,19 @@ p.end-session {
 	margin-left: auto;
 	margin-right: auto;
 }
+i.fas.fa-eye{
+	font-size: 100%;
+	margin-left: 100%;
+	color: green;
+	margin-top: 100%;
+}
+
+i.fas.fa-pen{
+	font-size: 100%;
+	margin-left: 100%;
+	color: green;
+	margin-top: 100%;
+}
 
 span{
 	float: right !important;

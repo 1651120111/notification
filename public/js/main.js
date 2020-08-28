@@ -38,21 +38,21 @@ chatForm.addEventListener('submit', (e) => {
     // Lay tin nhan tu form send
     const msg = document.getElementById('msg').value;
 
-    if (username == 'admin'){
+    if (username == 'admin') {
         db.ref(room + '/message').push().set({
             "sender": username,
             "message": msg,
             "date": time,
-            "seen_by_user" : false,
-            "seen_by_admin" : true,
+            "seen_by_user": false,
+            "seen_by_admin": true,
         });
     } else {
         db.ref(room + '/message').push().set({
             "sender": username,
             "message": msg,
             "date": time,
-            "seen_by_user" : true,
-            "seen_by_admin" : false,
+            "seen_by_user": true,
+            "seen_by_admin": false,
         });
     }
 
@@ -81,8 +81,8 @@ function test() {
 
                 if (currentPage < getNumberPage(length, perPage)) {
                     db.ref(room + "/message").orderByChild('date')
-                        .endAt(data3[length - getPage(currentPage+1, perPage, length).page].date,
-                            data2[length - getPage(currentPage+1, perPage, length).page]).limitToLast(getPage(currentPage, perPage, length).perPage)
+                        .endAt(data3[length - getPage(currentPage + 1, perPage, length).page].date,
+                            data2[length - getPage(currentPage + 1, perPage, length).page]).limitToLast(getPage(currentPage, perPage, length).perPage)
                         .on('child_added', function (snapshot) {
                             const data1 = snapshot.val();
                             let className = '';
@@ -90,19 +90,19 @@ function test() {
                                 className = 'username';
                             }
 
-                            const html =  '<div class="message ' + className + '" id="message ">' +
+                            const html = '<div class="message ' + className + '" id="message ">' +
                                 '<p class="meta">' + data1.sender + ' <span>' + data1.date + '</span></p>' +
                                 '<p class="text">' + data1.message + '</p>' +
                                 '</div>';
-                            $(document).ready(function(){
+                            $(document).ready(function () {
                                 $('#chat-messages').prepend(html);
                             });
                         });
                 } else {
-                    $(document).ready(function(){
-                        if (!$('#chat-messages').find(".end-session").length){
+                    $(document).ready(function () {
+                        if (!$('#chat-messages').find(".end-session").length) {
                             $('#chat-messages').prepend("<p class='end-session'>End</p>")
-                        } else{
+                        } else {
                             return false;
                         }
                     });
@@ -148,20 +148,84 @@ function test() {
             });
     });*/
 
+function getSeenAdmin() {
+    firebase.database().ref('JavaScript/message').orderByChild('seen_by_admin').equalTo(true).limitToLast(1).on('value', function (snapshot) {
+        //console.log(snapshot.val());
+        const data = snapshot.val();
+        return data;
+    })
+}
+
+
+function getSeenUser() {
+    firebase.database().ref('JavaScript/message').orderByChild('seen_by_user').equalTo(true).limitToLast(1).on('value', function (snapshot) {
+        //console.log(snapshot.val());
+        const data = snapshot.val();
+    })
+}
+
+/*'<span><i class="fas fa-eye" style="font-size: 100%;margin-left: 100%;color: green"></i></span>'+*/
 // Lấy ra tin nhắn hiển thị ban đầu
-db.ref(room + "/message").limitToLast(10).on("child_added", function (data) {
+db.ref(room + "/message").limitToLast(10).on("value", function (data) {
     const data1 = data.val();
-    let className = '';
-    if (data1.sender == username) {
-        className = 'username';
-    }
-    message.innerHTML +=
+    const data2 = Object.values(data1);
+    console.log(data2)
+    data2.forEach(function (value, index) {
+        let className = '';
+        let eyeIcon = '<span><i class="fas fa-eye"</span></i>';
+        let penIcon = '<span><i class="fas fa-pen"</span></i>';
+        if (value.sender == username) {
+            className = 'username';
+        }
+        data2[index] =  '<div class="message ' + className + '" id="message ">' +
+            '<p class="meta">' + value.sender + ' <span>' + value.date + '</span></p>' +
+            '<p class="text">' + value.message + '</p>' +
+            '</div>';
+        if (username == 'admin') {
+            firebase.database().ref(room + '/message').orderByChild('seen_by_user').equalTo(true).limitToLast(1).on('child_added', function (snapshot2) {
+                const data4 = snapshot2.val();
+                if (JSON.stringify(value) === JSON.stringify(data4)) {
+                    data2[index] = '<div class="message ' + className + '" id="message ">' +
+                        '<p class="meta">' + value.sender + ' <span>' + value.date + '</span></p>' +
+                        '<p class="text">' + value.message + penIcon + '</p>' +
+                        '</div>';
+                    message.innerHTML = data2.join('');
+                }
+            });
+        } else {
+            firebase.database().ref(room + '/message').orderByChild('seen_by_admin').equalTo(true).limitToLast(1).on('child_added', function (snapshot1) {
+                // console.log(snapshot.val());
+
+                const data3 = snapshot1.val();
+                if (JSON.stringify(value) === JSON.stringify(data3)) {
+                    data2[index] = '<div class="message ' + className + '" id="message ">' +
+                        '<p class="meta">' + value.sender + ' <span>' + value.date + '</span></p>' +
+                        '<p class="text">' + value.message + eyeIcon + '</p>' +
+                        '</div>';
+                    message.innerHTML = data2.join('');
+                }
+            });
+
+        }
+
+
+    });
+    /*console.log(data2)
+    console.log(data2[7]);*/
+    // /console.log(data1[value])
+    /*let dataEye = '';
+    if (data1.sender == '1651120111'){
+        if (data1.seen_by_admin == true ){
+            dataEye = '<span><i class="fas fa-eye" style="font-size: 100%;margin-left: 100%;color: green;margin-top: 100%;"></i></span>';
+        }
+    }*/
+   /* message.innerHTML +=
         '<div class="message ' + className + '" id="message ">' +
         '<p class="meta">' + data1.sender + ' <span>' + data1.date + '</span></p>' +
         '<p class="text">' + data1.message + '</p>' +
         '</div>';
     btnmsg.value = '';
-    message.scrollTop = message.scrollHeight;
+    message.scrollTop = message.scrollHeight;*/
 
 });
 
@@ -180,10 +244,10 @@ connectedRef.on('value', function (snap) {
     // true: user đang kết nối
     // onDisconnect() check xem thiet bi co ket noi hay khong?
     if (snap.val() == true) {
-        const con = myConnectionsRef.push();
+        const con = myConnectionsRef;
 
         // neu disconnect, thiet bi duoc remove
-        con.onDisconnect().remove();
+        con.onDisconnect().update({"online": false});
 
         // online set true: dang online
         con.set({"online": true});
@@ -200,12 +264,12 @@ firebase.database().ref('users/' + room).on("value", function (data) {
     // get key của value hiện tại là key của json tree dùng object.keys()
     const data1 = data.val();
     const data2 = Object.keys(data1);
-
+    console.log(data2)
     let i = 0;
     data2.forEach(function (value, index) {
         data2[index] = "<li>" + value + "</li>";
         firebase.database().ref("users/" + room + "/" + value + "/connections")
-            .on('child_added', function (snapshot) {
+            .on('value', function (snapshot) {
                 const online = snapshot.val();
                 if (online.online == true) {
                     data2[index] = '<li>' + value + '<span aria-label="Đang hoạt động" class="span-status" </span></li>';
@@ -213,7 +277,6 @@ firebase.database().ref('users/' + room).on("value", function (data) {
                 }
             });
     });
-
     listUsers.innerHTML = data2.join('');
     userOnline.innerText = i + '/' + data2.length;
 });
@@ -233,49 +296,77 @@ function getPage(page = 1, perPage = 5, totalRecord = 0) {
     }
 }
 
-
-document.addEventListener("visibilitychange", handleVisibilityChange, false);
-
-function handleVisibilityChange(){
-    if (document.visibilityState === 'hidden') {
-        console.log(1);
-    } else{
-        console.log(2);
-        // chuyen trang thai seen_by_host : false => true
-        switch (username) {
-            case "admin":
-                firebase.database().ref(room+'/message').orderByChild('seen_by_admin').equalTo(false).on('value',function (snapshot){
+// user online thi cho read thanh true
+firebase.database().ref('users/' + room).on("value", function (snapshot) {
+    const data = snapshot.val();
+    const data1 = Object.keys(data);
+    data1.forEach(key => {
+        if (data[key].connections.online == true) {
+            if (username == 'admin') {
+                console.log("admin vao");
+                firebase.database().ref(room + '/message').orderByChild('seen_by_admin').equalTo(false).on('value', function (snapshot) {
                     if (snapshot.val() != null) {
                         const data2 = Object.keys(snapshot.val());
                         for (let i in data2) {
-                            firebase.database().ref(room+'/message/' + data2[i]).update({
+                            firebase.database().ref(room + '/message/' + data2[i]).update({
                                 'seen_by_admin': true,
                             });
                         }
                     }
                 });
-                break;
-            case "1651120111":
-                firebase.database().ref(room+'/message').orderByChild('seen_by_user').equalTo(false).on('value',function (snapshot){
+            } else {
+                firebase.database().ref(room + '/message').orderByChild('seen_by_user').equalTo(false).on('value', function (snapshot) {
                     if (snapshot.val() != null) {
                         const data2 = Object.keys(snapshot.val());
-                        for ( let i in data2) {
-                            firebase.database().ref(room+'/message/' + data2[i]).update({
+                        for (let i in data2) {
+                            firebase.database().ref(room + '/message/' + data2[i]).update({
                                 'seen_by_user': true,
                             });
                         }
                     }
                 });
-                break;
+
+            }
+        } else {
+            return false;
         }
+    });
 
 
-        /*getNumberMessageUnReadByHost().then(data => {
-            firebase.database().ref('JavaScript/read').update({
-                'count_admin' : data,
-                'count_user' : 5,
-            })
-        })*/
+});
+
+/*document.addEventListener("visibilitychange", handleVisibilityChange, false);
+
+function handleVisibilityChange(){
+    console.log(username +" : "+ document.visibilityState);
+    if (username == 'admin' &&  document.visibilityState === 'visible') {
+        console.log("admin vao");
+        firebase.database().ref(room+'/message').orderByChild('seen_by_admin').equalTo(false).on('value',function (snapshot){
+            if (snapshot.val() != null) {
+                const data2 = Object.keys(snapshot.val());
+                for (let i in data2) {
+                    firebase.database().ref(room+'/message/' + data2[i]).update({
+                        'seen_by_admin': true,
+                    });
+                }
+            }
+        });
     }
-}
+
+    if (username == '1651120111' && document.visibilityState === 'visible'){
+        console.log("user vao");
+        firebase.database().ref(room+'/message').orderByChild('seen_by_user').equalTo(false).on('value',function (snapshot){
+            if (snapshot.val() != null) {
+                const data2 = Object.keys(snapshot.val());
+                for ( let i in data2) {
+                    firebase.database().ref(room+'/message/' + data2[i]).update({
+                        'seen_by_user': true,
+                    });
+                }
+            }
+        });
+
+    }
+
+}*/
 
