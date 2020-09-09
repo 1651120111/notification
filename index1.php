@@ -88,6 +88,14 @@ room {
     //  const data2 = Object.keys(data1);
     // -MFFF2uVMDHll33KF5id :  key lay duoc tu data2
     const totalNumberPage = 0;
+    firebase.database().ref("JavaScript/message").limitToLast(10).on("value", function (data) {
+        let i = 0;
+        data.forEach(function (data) {
+            i++;
+        })
+
+    })
+
 
     firebase.database().ref("JavaScript/message")
         .once('value', function(snapshot) {
@@ -150,6 +158,9 @@ room {
         })
 
     }
+    getNumberMessageUnReadByHost().then(data => {
+        console.log("unread: "+data)
+    })
     /*getNumberMessageUnReadByHost().then(data => {
         firebase.database().ref('JavaScript/read').set({})
     })*/
@@ -222,7 +233,7 @@ room {
         const key = Object.keys(data);
         const values = Object.values(data);
         const length = values.length;
-        console.log(data);
+        //console.log(data);
         //console.log(values)
 
 
@@ -234,7 +245,7 @@ room {
         const key = Object.keys(data);
         const values = Object.values(data);
         const length = values.length;
-        console.log(key[0]);
+        //console.log(key[0]);
         //console.log(values)
 
     })

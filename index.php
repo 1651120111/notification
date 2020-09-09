@@ -7,7 +7,6 @@ chat {
 }
 -->
 
-
 <!-- The core Firebase JS SDK is always required and must be listed first -->
 <script src="https://www.gstatic.com/firebasejs/6.6.1/firebase-app.js"></script>
 
@@ -28,37 +27,85 @@ chat {
     };
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-
-    const username = document.getElementById('username');
+    db = firebase.database()
+    const user = 'asd';
     const room = document.getElementById('room');
+    let id = 1651120111
+    let stt = 0
+    db.ref('chatapp/'+id+'/data').on('value',function (snapshot){
+        console.log(snapshot.val())
+    })
+    function sendMessage() {
+        db.ref("chatapp/" + id + "/data/" + 1+stt).set({
+            _id: id,
+            message: "hi" + 2,
+            name: 1651120111,
+            date: Date.now(),
+            seen_by_admin: false,
+            seen_by_user: false,
+        })
+        db.ref("chatapp/" + id).update({
+            time: Date.now()
+        })
+        // khoi tao phong chat: check admin,user seen
 
-    function sendMessage(e){
-        var message = document.getElementById('message').value;
+        db.ref("chatapp/" + id + "/read").set({
+            admin: false,
+            user: true,
+            count_user: 0,
+            count_admin: 0,
+        })
 
-        firebase.database().ref('messages').push().set({
-           "sender":myName,
-           "message":message
-        });
-        return false;
+        // kiem tra xem co thong tin user chua
+        db.ref("chatapp/" + id + "/user").set({
+            id : id,
+            name: 1651120111,
+            phone: '0708601835',
+            avatar: 'https://img.favpng.com/7/5/8/computer-icons-font-awesome-user-font-png-favpng-YMnbqNubA7zBmfa13MK8WdWs8.jpg',
+        })
+
+        db.ref("users/"+id).set({
+            name : 1651120111
+        })
     }
 
-    firebase.database().ref("messages").on("child_added",function (data){
-        data1 = data.val();
-        var html = '';
-        html += "<li>";
-        html +=   data1.sender +': '+data1.message;
-        html += "</li>";
-        document.getElementById('messages').innerHTML += html;
-        document.getElementById('message').value = '';
-    });
+    // handle user online/offline
+    // Theo dõi trang thái trên trình duyệt
+    const myConnectionsRef = db.ref('chatapp/' + id + '/user/connections');
+
+    // Lưu trữ thời gian online lần gần nhất
+    const lastOnlineRef = db.ref('chatapp/' + id + '/user/connections');
+
+    const connectedRef = db.ref('.info/connected');
+
+    db.ref('chatapp/'+id).on('value',function (snapshot) {
+        const child = snapshot.hasChild('data')
+        if(!child) return false
+        return connectionUser()
+    })
+
+    function connectionUser(){
+        connectedRef.on('value', function (snap) {
+            // snap.val() gia tri false || true
+            // true: user đang kết nối
+            // onDisconnect() check xem thiet bi co ket noi hay khong?
+            if (snap.val() == true) {
+                const con = myConnectionsRef;
+
+                // neu disconnect, thiet bi duoc remove
+                con.onDisconnect().update({"online": false});
+
+                // online set true: dang online
+                con.set({"online": true});
+
+                // Luu thoi gian gan nhat disconnect
+                lastOnlineRef.onDisconnect().set(Date.now());
+            }
+        });
+    }
 </script>
 
-<form action="" >
-    <input type="text" name="username" id="username">
-    <input type="text" name="room" id="room">
-</form>
-
-<form action="" onsubmit="return sendMessage();">
+<form action="" id="chat_form" onsubmit="return sendMessage();">
     <input type="text" id="message">
     <input type="submit">
 </form>

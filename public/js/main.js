@@ -31,29 +31,87 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+
+const messaging = firebase.messaging();
+messaging.usePublicVapidKey("BE-3C-FHE14TefIg6jgrVpWyAEYmCwYjJdEgxOKq4vo6BOg4hkQMb11dpXPkYKvlmPRKZfaEsRpWlNiWgltH1a8");
+
+Notification.requestPermission().then((permission)=>{
+    if (permission === 'granted') {
+        messaging.getToken().then((currentToken) => {
+            if (currentToken) {
+                console.log("token : "+currentToken);
+                //document.getElementById('token').innerHTML = currentToken;
+            }
+            else {
+                // Show permission request.
+                console.log('No Instance ID token available. Request permission to generate one.');
+                // Show permission UI
+            }
+        }).catch((err) => {
+            console.log('An error occurred while retrieving token. ', err);
+        });
+
+    }else{
+        console.log("khong the");
+    }
+});
+
+messaging.onMessage((payload) => {
+    console.log('Message received. ', payload);
+});
 // Gui tin nhan
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
-
     // Lay tin nhan tu form send
     const msg = document.getElementById('msg').value;
-
+    let className = '';
     if (username == 'admin') {
         db.ref(room + '/message').push().set({
             "sender": username,
             "message": msg,
-            "date": time,
+            "date": Date.now(),
             "seen_by_user": false,
             "seen_by_admin": true,
-        });
+        },function (error) {
+            if (!error){
+            }
+        }
+    )
     } else {
         db.ref(room + '/message').push().set({
             "sender": username,
             "message": msg,
-            "date": time,
+            "date": Date.now(),
             "seen_by_user": true,
             "seen_by_admin": false,
-        });
+        },function (error) {
+            if (!error){
+                console.log("done")
+                db.ref('fcmTokens').child(username).once('value',function (snapshot){
+                    console.log(snapshot.val())
+                    $.ajax({
+                        url: 'https://fcm.goolge.com/fcm/send',
+                        method: "POST",
+                        headers:{
+                            'Content-Type': 'application/json',
+                            'Authorization': 'key=AAAAFglIZpo:APA91bFy3YQKaUOfpuDGL28XeMvYWh8UhK3IfIYe-xyIYY6_goswE6BeZXGKZdNMSHyjXtb6RcRphGEl4fmy9BNyOfpbe8xU1wIupVxD8Izf8iPVpms9SRtU47fY4CJcF4xi1tuG223G'
+                        },
+                        data: JSON.stringify({
+                            'to':snapshot.val()['token_id'],
+                            'data':{
+                                'message': msg
+                            }
+                        }),
+                        success:function (response){
+                            console.log(response)
+                        },
+                        error:function (xhr,status,error) {
+                            console.log(xhr + " : " +error);
+                        }
+                    })
+                })
+            }
+        })
     }
 
 
@@ -68,35 +126,51 @@ function test() {
         // -MFFF2uVMDHll33KF5id :  key lay duoc tu data2
         db.ref(room + "/message")
             .on('value', function (snapshot) {
+
                 const data1 = snapshot.val();
                 //data3 : lay value trong node con message
-                const data3 = Object.values(data1);
+                const data3 = Object.values(data1).sort();
+
                 //data2 : lay key (key random) trong node con message
-                const data2 = Object.keys(data1);
+                const data2 = Object.keys(data1).sort();
+
                 const length = data2.length - 1;
                 const perPage = 10;
                 /*console.log(data3[length-getPage().page]);
                 length-getPage().page : lay key 0-14 trong mang data2 va data3
                 data2[length-getPage().page] la key/node trong message*/
-
+               /* console.log("page : " + currentPage)
+                console.log(data3[length - getPage(currentPage + 1, perPage, length).page].date)
+                console.log(data2[length - getPage(currentPage + 1, perPage, length).page])
+                console.log(getPage(currentPage, perPage, length).perPage)*/
                 if (currentPage < getNumberPage(length, perPage)) {
                     db.ref(room + "/message").orderByChild('date')
-                        .endAt(data3[length - getPage(currentPage + 1, perPage, length).page].date,
-                            data2[length - getPage(currentPage + 1, perPage, length).page]).limitToLast(getPage(currentPage, perPage, length).perPage)
-                        .on('child_added', function (snapshot) {
+                        .endAt(data3[length - getPage(currentPage+1 , perPage, length).page].date,
+                            data2[length - getPage(currentPage+1, perPage, length).page]).limitToLast(getPage(currentPage+1 , perPage, length).perPage)
+                        .on('value', function (snapshot) {
                             const data1 = snapshot.val();
-                            let className = '';
-                            if (data1.sender == username) {
-                                className = 'username';
-                            }
+                            const key = Object.keys(data1).reverse();
+                            const value = Object.values(data1).reverse();
+                            let html = [];
+                            value.forEach(function (value, index) {
+                                html.push(value);
+                            })
+                            console.log(html)
+                            html.forEach(function (value, index) {
+                                let className = '';
+                                if (value.sender == username) {
+                                    className = 'username';
+                                }
+                                const date = new Date(value.date);
+                                const text = '<div class="message ' + className + '" id="message ">' +
+                                    '<p class="meta">' + value.sender + ' <span>' + date.toLocaleTimeString() + '</span></p>' +
+                                    '<p class="text">' + value.message + '</p>' +
+                                    '</div>';
+                                $(document).ready(function () {
+                                    $('#chat-messages').prepend(text);
+                                });
+                            })
 
-                            const html = '<div class="message ' + className + '" id="message ">' +
-                                '<p class="meta">' + data1.sender + ' <span>' + data1.date + '</span></p>' +
-                                '<p class="text">' + data1.message + '</p>' +
-                                '</div>';
-                            $(document).ready(function () {
-                                $('#chat-messages').prepend(html);
-                            });
                         });
                 } else {
                     $(document).ready(function () {
@@ -148,87 +222,89 @@ function test() {
             });
     });*/
 
-function getSeenAdmin() {
-    firebase.database().ref('JavaScript/message').orderByChild('seen_by_admin').equalTo(true).limitToLast(1).on('value', function (snapshot) {
-        //console.log(snapshot.val());
-        const data = snapshot.val();
-        return data;
-    })
-}
-
-
-function getSeenUser() {
-    firebase.database().ref('JavaScript/message').orderByChild('seen_by_user').equalTo(true).limitToLast(1).on('value', function (snapshot) {
-        //console.log(snapshot.val());
-        const data = snapshot.val();
-    })
-}
-
 /*'<span><i class="fas fa-eye" style="font-size: 100%;margin-left: 100%;color: green"></i></span>'+*/
+
 // Lấy ra tin nhắn hiển thị ban đầu
-db.ref(room + "/message").limitToLast(10).on("value", function (data) {
-    const data1 = data.val();
-    const data2 = Object.values(data1);
-    console.log(data2)
-    data2.forEach(function (value, index) {
-        let className = '';
-        let eyeIcon = '<span><i class="fas fa-eye"</span></i>';
-        let penIcon = '<span><i class="fas fa-pen"</span></i>';
+db.ref(room + "/message").limitToLast(10).once("value", function (data) {
+    let i = 0;
+    let o = 0;
+    let className = '';
+    let eyeIcon = '';
+    let userIcon = '';
+    const value1 = Object.values(data.val());
+    const key = Object.keys(data.val());
+    // /console.log(data.val())
+    data.forEach(function (data) {
+        if (data.val().seen_by_admin == true) {
+            i++;
+        }
+        if (data.val().seen_by_user == true) {
+            o++;
+        }
+    })
+    // pop để bỏ phần tử cuối/ khi hiển thị không bị trùng với tin nhắn
+    value1.pop();
+    value1.forEach(function (value, index) {
         if (value.sender == username) {
             className = 'username';
-        }
-        data2[index] =  '<div class="message ' + className + '" id="message ">' +
-            '<p class="meta">' + value.sender + ' <span>' + value.date + '</span></p>' +
-            '<p class="text">' + value.message + '</p>' +
-            '</div>';
-        if (username == 'admin') {
-            firebase.database().ref(room + '/message').orderByChild('seen_by_user').equalTo(true).limitToLast(1).on('child_added', function (snapshot2) {
-                const data4 = snapshot2.val();
-                if (JSON.stringify(value) === JSON.stringify(data4)) {
-                    data2[index] = '<div class="message ' + className + '" id="message ">' +
-                        '<p class="meta">' + value.sender + ' <span>' + value.date + '</span></p>' +
-                        '<p class="text">' + value.message + penIcon + '</p>' +
-                        '</div>';
-                    message.innerHTML = data2.join('');
-                }
-            });
         } else {
-            firebase.database().ref(room + '/message').orderByChild('seen_by_admin').equalTo(true).limitToLast(1).on('child_added', function (snapshot1) {
-                // console.log(snapshot.val());
-
-                const data3 = snapshot1.val();
-                if (JSON.stringify(value) === JSON.stringify(data3)) {
-                    data2[index] = '<div class="message ' + className + '" id="message ">' +
-                        '<p class="meta">' + value.sender + ' <span>' + value.date + '</span></p>' +
-                        '<p class="text">' + value.message + eyeIcon + '</p>' +
-                        '</div>';
-                    message.innerHTML = data2.join('');
-                }
-            });
-
+            className = '';
         }
-
-
-    });
-    /*console.log(data2)
-    console.log(data2[7]);*/
-    // /console.log(data1[value])
-    /*let dataEye = '';
-    if (data1.sender == '1651120111'){
-        if (data1.seen_by_admin == true ){
-            dataEye = '<span><i class="fas fa-eye" style="font-size: 100%;margin-left: 100%;color: green;margin-top: 100%;"></i></span>';
+        if (JSON.stringify(value) === JSON.stringify(value1[i - 1])) {
+            eyeIcon = '<span id="icon"><i class="fas fa-eye" <="" i=""></i></span>';
+        } else {
+            eyeIcon = '';
         }
-    }*/
-   /* message.innerHTML +=
-        '<div class="message ' + className + '" id="message ">' +
-        '<p class="meta">' + data1.sender + ' <span>' + data1.date + '</span></p>' +
-        '<p class="text">' + data1.message + '</p>' +
-        '</div>';
-    btnmsg.value = '';
-    message.scrollTop = message.scrollHeight;*/
+        if (JSON.stringify(value) === JSON.stringify(value1[o - 1])) {
+            userIcon = '<span id="icon"><i class="fas fa-user" <="" i=""></i>&nbsp;</span>';
+        } else {
+            userIcon = '';
+        }
+        const date = new Date(value.date);
+        message.innerHTML +=
+            '<div class="message ' + className + '" id="message ">' +
+            '<p class="meta">' + value.sender + ' <span>' + date.toLocaleTimeString() + '</span></p>' +
+            '<p class="text">' + value.message + userIcon + eyeIcon + '</p>' +
+            '</div>';
+    })
+    message.scrollTop = message.scrollHeight;
+
 
 });
+db.ref(room+'/message').orderByChild('date').limitToLast(1).on('child_added',function (snapshot){
+    console.log(snapshot.val())
+    let className = '';
+    let iconCheck = '<i class="fa fa-check" style="float: right;color: green"></i>';
+    const data = snapshot.val();
+    const date = new Date(data.date);
+    let html = '';
+    let eyeIcon = '<span id="icon"><i class="fas fa-eye" <="" i=""></i></span>';
+    let userIcon = '<span id="icon"><i class="fas fa-user" <="" i=""></i>&nbsp;</span>';
 
+    if (data.sender == username){
+        className = 'username';
+    }
+    if (username == 'admin' && data.seen_by_user == true){
+        html = '<div class="message ' + className + '" id="message ">' +
+            '<p class="meta">' + data.sender + ' <span>' + date.toLocaleTimeString() + '</span></p>' +
+            '<p class="text">' +data.message +'</p>' +eyeIcon +
+            '</div>';
+    } else if (username == 'admin' && data.seen_by_user == true){
+        html = '<div class="message ' + className + '" id="message ">' +
+            '<p class="meta">' + data.sender + ' <span>' + date.toLocaleTimeString() + '</span></p>' +
+            '<p class="text">' +data.message +'</p>' +userIcon +
+            '</div>';
+    } else {
+        html = '<div class="message ' + className + '" id="message ">' +
+            '<p class="meta">' + data.sender + ' <span>' + date.toLocaleTimeString() + '</span></p>' +
+            '<p class="text">' +data.message +'</p>' +iconCheck +
+            '</div>';
+    }
+
+    message.innerHTML += html;
+    btnmsg.value = '';
+    message.scrollTop = message.scrollHeight;
+})
 // Theo dõi trang thái trên trình duyệt
 const myConnectionsRef = db.ref('users/' + room + '/' + username + '/connections');
 
@@ -264,7 +340,7 @@ firebase.database().ref('users/' + room).on("value", function (data) {
     // get key của value hiện tại là key của json tree dùng object.keys()
     const data1 = data.val();
     const data2 = Object.keys(data1);
-    console.log(data2)
+    //console.log(data2)
     let i = 0;
     data2.forEach(function (value, index) {
         data2[index] = "<li>" + value + "</li>";
@@ -285,55 +361,61 @@ function getNumberPage(total, perPage) {
     return Math.ceil(total / perPage);
 }
 
+// perpage = 10 total = 22 page =2 => page =3 -> perpage = 2
 // Object.keys(data).length kiem tra Object co trong hay khong?
+
 function getPage(page = 1, perPage = 5, totalRecord = 0) {
     if (page == 1) {
         return {page: 1, perPage};
     } else if (page > getNumberPage(totalRecord, perPage)) {
-        return {page: getNumberPage(totalRecord, perPage) * perPage - perPage, perPage};
+        return {
+            page: getNumberPage(totalRecord, perPage) * perPage - perPage,
+            perPage: 0
+        };
+    } else if (page == getNumberPage(totalRecord, perPage)) {
+        return {
+            page: getNumberPage(totalRecord, perPage) * perPage - perPage,
+            perPage: totalRecord - (getNumberPage(totalRecord, perPage) * perPage - perPage -1)
+        }
     } else {
-        return {page: parseInt(page) * perPage - perPage, perPage};
+        return {page: perPage*page-perPage, perPage};
     }
 }
 
-// user online thi cho read thanh true
-firebase.database().ref('users/' + room).on("value", function (snapshot) {
-    const data = snapshot.val();
-    const data1 = Object.keys(data);
-    data1.forEach(key => {
-        if (data[key].connections.online == true) {
-            if (username == 'admin') {
-                console.log("admin vao");
-                firebase.database().ref(room + '/message').orderByChild('seen_by_admin').equalTo(false).on('value', function (snapshot) {
-                    if (snapshot.val() != null) {
-                        const data2 = Object.keys(snapshot.val());
-                        for (let i in data2) {
-                            firebase.database().ref(room + '/message/' + data2[i]).update({
-                                'seen_by_admin': true,
-                            });
-                        }
-                    }
-                });
-            } else {
-                firebase.database().ref(room + '/message').orderByChild('seen_by_user').equalTo(false).on('value', function (snapshot) {
-                    if (snapshot.val() != null) {
-                        const data2 = Object.keys(snapshot.val());
-                        for (let i in data2) {
-                            firebase.database().ref(room + '/message/' + data2[i]).update({
-                                'seen_by_user': true,
-                            });
-                        }
-                    }
-                });
-
+var input_focused = false;
+btnmsg.addEventListener("focus", function () {
+    if (username == 'admin') {
+        firebase.database().ref(room + '/message').orderByChild('seen_by_admin').equalTo(false).on('value', function (snapshot) {
+            if (snapshot.val() != null) {
+                const key = Object.keys(snapshot.val());
+                const values = Object.values(snapshot.val());
+                values.forEach(function (value, index) {
+                    db.ref(room + '/message/' + key[index]).update({
+                        'seen_by_admin': true
+                    })
+                })
             }
-        } else {
-            return false;
-        }
-    });
-
-
+        });
+    } else {
+        firebase.database().ref(room + '/message').orderByChild('seen_by_user').equalTo(false).on("value", function (snapshot) {
+            if (snapshot.val() != null) {
+                const key = Object.keys(snapshot.val());
+                const values = Object.values(snapshot.val());
+                values.forEach(function (value, index) {
+                    db.ref(room + '/message/' + key[index]).update({
+                        'seen_by_user': true
+                    })
+                })
+            }
+        })
+    }
 });
+btnmsg.addEventListener("blur", function () {
+    console.log(2);
+});
+
+console.log("ok")
+
 
 /*document.addEventListener("visibilitychange", handleVisibilityChange, false);
 

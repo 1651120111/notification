@@ -37,7 +37,13 @@ i.fas.fa-eye{
 	margin-top: 100%;
 }
 
-i.fas.fa-pen{
+.text i.fa.fa-check{
+	float: right;
+	color: green;
+}
+
+
+i.fas.fa-user{
 	font-size: 100%;
 	margin-left: 100%;
 	color: green;
