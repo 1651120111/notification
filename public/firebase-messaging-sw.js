@@ -16,15 +16,15 @@ firebase.initializeApp({
 // messages.
 const messaging = firebase.messaging();
 messaging.setBackgroundMessageHandler(function(payload) {
-    console.log("payload")
+    /*console.log("payload")
     console.log(payload)
     // Customize notification here
-    const notificationTitle = payload.data.name;
+    /!*const notificationTitle = payload.data.name;
     const notificationOptions = {
         "body": payload.data.message,
         "click_action": "https://www.google.com/",
-    };
+    };*!/
 
     return self.registration.showNotification(notificationTitle,
-        notificationOptions);
+        notificationOptions);*/
 });

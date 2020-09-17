@@ -44,7 +44,7 @@ navigator.serviceWorker.register('./firebase-messaging-sw.js')
             return messaging.getToken();
         }).then(function (token) {
             console.log(token)
-            firebase.database().ref('fcmTokens').child(username).set({ token_id: token });
+            firebase.database().ref('fcmTokens').child(username).set({token_id: token});
         })
     });
 
@@ -59,13 +59,13 @@ let token = '';
 
 function getTokenUser() {
     return new Promise(resolve => {
-        db.ref('users/'+room).on('value',function (snapshot) {
+        db.ref('users/' + room).on('value', function (snapshot) {
             const data = snapshot.val();
             const key = Object.keys(data)
             const value = Object.values(data)
             key.forEach(function (value, index) {
-                if (key[index] != username){
-                    db.ref('fcmTokens/'+key[index]).on('value',(snapshot)=>{
+                if (key[index] != username) {
+                    db.ref('fcmTokens/' + key[index]).on('value', (snapshot) => {
                         resolve(snapshot.val().token_id)
                     })
                 }
@@ -75,9 +75,10 @@ function getTokenUser() {
     })
 }
 
-getTokenUser().then((e)=>{
-   token = e;
+getTokenUser().then((e) => {
+    token = e;
 })
+
 
 // Gui tin nhan
 chatForm.addEventListener('submit', (e) => {
@@ -87,41 +88,50 @@ chatForm.addEventListener('submit', (e) => {
     let className = '';
     if (username == 'admin') {
         db.ref(room + '/message').push().set({
-            "sender": username,
-            "message": msg,
-            "date": Date.now(),
-            "seen_by_user": false,
-            "seen_by_admin": true,
-        },function (error) {
-            if (!error){
-                console.log("vao")
-                    $.ajax({
-                        url: 'https://fcm.googleapis.com/fcm/send',
-                        method: 'POST',
-                        headers:{
-                            'Content-Type': 'application/json',
-                            'Authorization': 'key=AAAAFglIZpo:APA91bFy3YQKaUOfpuDGL28XeMvYWh8UhK3IfIYe-xyIYY6_goswE6BeZXGKZdNMSHyjXtb6RcRphGEl4fmy9BNyOfpbe8xU1wIupVxD8Izf8iPVpms9SRtU47fY4CJcF4xi1tuG223G'
-                        },
-                        data: JSON.stringify({
-                            'to':'fygU8dllhhA:APA91bGy89euuObZW3s3H_9FBMOrlF2g180sgCkTLu4MVff3i4yeo1U4z03MiQaGqL1aKfWnn6r3fDHC57Zjdn24PBvv7sDnA87uEeisN264_sf0dylP45rKnosr6mQAuifbnIsvzmP1',
-                            "notification":{
-                                "title" : "admin",
-                                "body" : msg,
-                                "click_action": "http://localhost/firebasechat/public/chat.html?username=1651120111&room=JavaScript"
-                            },
-                        }),
-                        success:function (response){
-                            debugger
-                            console.log(response)
-                        },
-                        error:function (xhr,status,error) {
-                            debugger
-                            console.log(xhr + " : " +error);
-                        }
+                "sender": username,
+                "message": msg,
+                "date": Date.now(),
+                "seen_by_user": false,
+                "seen_by_admin": true,
+            }, function (error) {
+                if (!error) {
+                    let token = '';
+                    db.ref('fcmTokens').once('value', function (snapshot) {
+                        console.log(snapshot.val())
+                        const key = Object.keys(snapshot.val());
+                        const value1 = Object.values(snapshot.val());
+                        key.forEach(function (value, index) {
+                            if (value != username) {
+                                token = value1[index]['token_id'];
+                                $.ajax({
+                                    url: 'https://fcm.googleapis.com/fcm/send',
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': 'key=AAAAFglIZpo:APA91bFy3YQKaUOfpuDGL28XeMvYWh8UhK3IfIYe-xyIYY6_goswE6BeZXGKZdNMSHyjXtb6RcRphGEl4fmy9BNyOfpbe8xU1wIupVxD8Izf8iPVpms9SRtU47fY4CJcF4xi1tuG223G'
+                                    },
+                                    data: JSON.stringify({
+                                        'to': token,
+                                        "notification": {
+                                            "title":username,
+                                            "body": msg,
+                                            "click_action": "http://localhost/firebasechat/public/chat.html?username="+value1[index]+"&room=JavaScript"
+                                        },
+                                    }),
+                                    success: function (response) {
+                                        console.log(response)
+                                    },
+                                    error: function (xhr, status, error) {
+                                        console.log(xhr + " : " + error);
+                                    }
+                                })
+
+                            }
+                        })
                     })
+                }
             }
-        }
-    )
+        )
     } else {
         db.ref(room + '/message').push().set({
             "sender": username,
@@ -129,29 +139,39 @@ chatForm.addEventListener('submit', (e) => {
             "date": Date.now(),
             "seen_by_user": true,
             "seen_by_admin": false,
-        },function (error) {
-            if (!error){
+        }, function (error) {
+            if (!error) {
                 console.log("done")
-                db.ref('fcmTokens').child(username).once('value',function (snapshot){
+                db.ref('fcmTokens').once('value', function (snapshot) {
                     console.log(snapshot.val())
-                    $.ajax({
-                        url: 'https://fcm.googleapis.com/fcm/send',
-                        method: 'POST',
-                        headers:{
-                            'Content-Type': 'application/json',
-                            'Authorization': 'key=AAAAFglIZpo:APA91bFy3YQKaUOfpuDGL28XeMvYWh8UhK3IfIYe-xyIYY6_goswE6BeZXGKZdNMSHyjXtb6RcRphGEl4fmy9BNyOfpbe8xU1wIupVxD8Izf8iPVpms9SRtU47fY4CJcF4xi1tuG223G'
-                        },
-                        data: JSON.stringify({
-                            to:"f5NrppRlt1A:APA91bFOac0_Ykro6_IJscSdgGj2P2NcDWDsG1S881J44Qh9zLQkhDWkQ6kYm0pEtVg1lJWSrZKAZKZOlHNF7FdgE1KnUyx5LfyAvgXg72nbVRJVNTP7FKpuu8aSFLtOYtohxmY2bLCi",
-                            data:{
-                                message: msg
-                            }
-                        }),
-                        success:function (response){
-                            console.log(response)
-                        },
-                        error:function (xhr,status,error) {
-                            console.log(xhr + " : " +error);
+                    const key = Object.keys(snapshot.val());
+                    const value1 = Object.values(snapshot.val());
+                    let token = '';
+                    key.forEach(function (value, index) {
+                        if (value != username) {
+                            token = value1[index]['token_id'];
+                            $.ajax({
+                                url: 'https://fcm.googleapis.com/fcm/send',
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'key=AAAAFglIZpo:APA91bFy3YQKaUOfpuDGL28XeMvYWh8UhK3IfIYe-xyIYY6_goswE6BeZXGKZdNMSHyjXtb6RcRphGEl4fmy9BNyOfpbe8xU1wIupVxD8Izf8iPVpms9SRtU47fY4CJcF4xi1tuG223G'
+                                },
+                                data: JSON.stringify({
+                                    to: token,
+                                    "notification": {
+                                        "title": username,
+                                        "body": msg,
+                                        "click_action": "http://localhost/firebasechat/public/chat.html?username="+value1[index]+"&room=JavaScript"
+                                    },
+                                }),
+                                success: function (response) {
+                                    console.log(response)
+                                },
+                                error: function (xhr, status, error) {
+                                    console.log(xhr + " : " + error);
+                                }
+                            })
                         }
                     })
                 })
@@ -184,14 +204,14 @@ function test() {
                 /*console.log(data3[length-getPage().page]);
                 length-getPage().page : lay key 0-14 trong mang data2 va data3
                 data2[length-getPage().page] la key/node trong message*/
-               /* console.log("page : " + currentPage)
-                console.log(data3[length - getPage(currentPage + 1, perPage, length).page].date)
-                console.log(data2[length - getPage(currentPage + 1, perPage, length).page])
-                console.log(getPage(currentPage, perPage, length).perPage)*/
+                /* console.log("page : " + currentPage)
+                 console.log(data3[length - getPage(currentPage + 1, perPage, length).page].date)
+                 console.log(data2[length - getPage(currentPage + 1, perPage, length).page])
+                 console.log(getPage(currentPage, perPage, length).perPage)*/
                 if (currentPage < getNumberPage(length, perPage)) {
                     db.ref(room + "/message").orderByChild('date')
-                        .endAt(data3[length - getPage(currentPage+1 , perPage, length).page].date,
-                            data2[length - getPage(currentPage+1, perPage, length).page]).limitToLast(getPage(currentPage+1 , perPage, length).perPage)
+                        .endAt(data3[length - getPage(currentPage + 1, perPage, length).page].date,
+                            data2[length - getPage(currentPage + 1, perPage, length).page]).limitToLast(getPage(currentPage + 1, perPage, length).perPage)
                         .on('value', function (snapshot) {
                             const data1 = snapshot.val();
                             const key = Object.keys(data1).reverse();
@@ -316,7 +336,7 @@ db.ref(room + "/message").limitToLast(10).once("value", function (data) {
 
 
 });
-db.ref(room+'/message').orderByChild('date').limitToLast(1).on('child_added',function (snapshot){
+db.ref(room + '/message').orderByChild('date').limitToLast(1).on('child_added', function (snapshot) {
     console.log(snapshot.val())
     let className = '';
     let iconCheck = '<i class="fa fa-check" style="float: right;color: green"></i>';
@@ -326,23 +346,23 @@ db.ref(room+'/message').orderByChild('date').limitToLast(1).on('child_added',fun
     let eyeIcon = '<span id="icon"><i class="fas fa-eye" <="" i=""></i></span>';
     let userIcon = '<span id="icon"><i class="fas fa-user" <="" i=""></i>&nbsp;</span>';
 
-    if (data.sender == username){
+    if (data.sender == username) {
         className = 'username';
     }
-    if (username == 'admin' && data.seen_by_user == true){
+    if (username == 'admin' && data.seen_by_user == true) {
         html = '<div class="message ' + className + '" id="message ">' +
             '<p class="meta">' + data.sender + ' <span>' + date.toLocaleTimeString() + '</span></p>' +
-            '<p class="text">' +data.message +'</p>' +eyeIcon +
+            '<p class="text">' + data.message + '</p>' + eyeIcon +
             '</div>';
-    } else if (username == 'admin' && data.seen_by_user == true){
+    } else if (username == 'admin' && data.seen_by_user == true) {
         html = '<div class="message ' + className + '" id="message ">' +
             '<p class="meta">' + data.sender + ' <span>' + date.toLocaleTimeString() + '</span></p>' +
-            '<p class="text">' +data.message +'</p>' +userIcon +
+            '<p class="text">' + data.message + '</p>' + userIcon +
             '</div>';
     } else {
         html = '<div class="message ' + className + '" id="message ">' +
             '<p class="meta">' + data.sender + ' <span>' + date.toLocaleTimeString() + '</span></p>' +
-            '<p class="text">' +data.message +'</p>' +iconCheck +
+            '<p class="text">' + data.message + '</p>' + iconCheck +
             '</div>';
     }
 
@@ -420,10 +440,10 @@ function getPage(page = 1, perPage = 5, totalRecord = 0) {
     } else if (page == getNumberPage(totalRecord, perPage)) {
         return {
             page: getNumberPage(totalRecord, perPage) * perPage - perPage,
-            perPage: totalRecord - (getNumberPage(totalRecord, perPage) * perPage - perPage -1)
+            perPage: totalRecord - (getNumberPage(totalRecord, perPage) * perPage - perPage - 1)
         }
     } else {
-        return {page: perPage*page-perPage, perPage};
+        return {page: perPage * page - perPage, perPage};
     }
 }
 
