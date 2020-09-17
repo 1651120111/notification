@@ -116,7 +116,8 @@ chatForm.addEventListener('submit', (e) => {
                                         "notification": {
                                             "title":username,
                                             "body": msg,
-                                            "click_action": link+"?username="+key[index]+"&room="+room
+                                            "click_action": link+"?username="+key[index]+"&room="+room,
+                                            "icon": "test.png"
                                         },
                                         "data": {
                                             "name": "nhan"
@@ -167,7 +168,8 @@ chatForm.addEventListener('submit', (e) => {
                                     "notification": {
                                         "title": username,
                                         "body": msg,
-                                        "click_action": link+"?username="+key[index]+"&room="+room
+                                        "click_action": link+"?username="+key[index]+"&room="+room,
+                                        "icon": "test.png"
                                     },
                                 }),
                                 success: function (response) {

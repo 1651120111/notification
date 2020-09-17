@@ -32,7 +32,7 @@ chat {
     const room = document.getElementById('room');
     let id = "04"
 
-    let stt = "04"
+    let stt = "05"
     const date = Date.now()
 
     function sendMessage() {
