@@ -28,49 +28,70 @@ chat {
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     db = firebase.database()
-    const user = 'asd';
+    const name = "Hoang";
     const room = document.getElementById('room');
-    let id = 1651120111
-    let stt = 0
-    db.ref('chatapp/'+id+'/data').on('value',function (snapshot){
-        console.log(snapshot.val())
-    })
+    let id = "04"
+
+    let stt = "04"
+    const date = Date.now()
+
     function sendMessage() {
-        db.ref("chatapp/" + id + "/data/" + 1+stt).set({
-            _id: id,
-            message: "hi" + 2,
-            name: 1651120111,
-            date: Date.now(),
+        db.ref("chatapp/"+id).on('value',function (snapshot) {
+            if (!snapshot.hasChild('time') ){
+                db.ref("chatapp/"+id).set({
+                    time: date
+                })
+            }
+        })
+        db.ref("chatapp/" + id + "/data/" + stt).set({
+            _id: stt,
+            message: "hi "+stt ,
+            name: name,
+            idUser: id,
+            date: date,
             seen_by_admin: false,
             seen_by_user: false,
         })
+
         db.ref("chatapp/" + id).update({
-            time: Date.now()
+            timeLastMessage: date
         })
-        // khoi tao phong chat: check admin,user seen
+
 
         db.ref("chatapp/" + id + "/read").set({
-            admin: false,
-            user: true,
-            count_user: 0,
+            admin:false,
+            user:true,
             count_admin: 0,
+            count_user: 0,
         })
 
-        // kiem tra xem co thong tin user chua
         db.ref("chatapp/" + id + "/user").set({
-            id : id,
-            name: 1651120111,
-            phone: '0708601835',
-            avatar: 'https://img.favpng.com/7/5/8/computer-icons-font-awesome-user-font-png-favpng-YMnbqNubA7zBmfa13MK8WdWs8.jpg',
+            avatar:"https://img.favpng.com/7/5/8/computer-icons-font-awesome-user-font-png-favpng-YMnbqNubA7zBmfa13MK8WdWs8.jpg",
+            id:id,
+            name: name,
+            phone: "0708501835",
         })
 
         db.ref("users/"+id).set({
-            name : 1651120111
+            name:name
+        },(e)=>{
+            if(!e)
+                console.log('user -id')
+        })
+
+        // handle user online/offline
+        // Theo dõi trang thái trên trình duyệt
+
+        db.ref("chatapp/"+id).on('value',function (snapshot) {
+            if (!snapshot.hasChild('time')){
+                console.log("ok")
+                db.ref("chatapp/"+id).update({
+                    time:Date.now()
+                })
+            }
         })
     }
 
-    // handle user online/offline
-    // Theo dõi trang thái trên trình duyệt
     const myConnectionsRef = db.ref('chatapp/' + id + '/user/connections');
 
     // Lưu trữ thời gian online lần gần nhất
@@ -78,11 +99,6 @@ chat {
 
     const connectedRef = db.ref('.info/connected');
 
-    db.ref('chatapp/'+id).on('value',function (snapshot) {
-        const child = snapshot.hasChild('data')
-        if(!child) return false
-        return connectionUser()
-    })
 
     function connectionUser(){
         connectedRef.on('value', function (snap) {
@@ -103,6 +119,16 @@ chat {
             }
         });
     }
+
+    db.ref('chatapp/'+id).on('value',function (snapshot) {
+        const child = snapshot.hasChild('data')
+        if(!child) return false
+        return connectionUser()
+    })
+
+
+
+
 </script>
 
 <form action="" id="chat_form" onsubmit="return sendMessage();">

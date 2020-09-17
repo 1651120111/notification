@@ -35,30 +35,50 @@ const db = firebase.database();
 const messaging = firebase.messaging();
 messaging.usePublicVapidKey("BE-3C-FHE14TefIg6jgrVpWyAEYmCwYjJdEgxOKq4vo6BOg4hkQMb11dpXPkYKvlmPRKZfaEsRpWlNiWgltH1a8");
 
-Notification.requestPermission().then((permission)=>{
-    if (permission === 'granted') {
-        messaging.getToken().then((currentToken) => {
-            if (currentToken) {
-                console.log("token : "+currentToken);
-                //document.getElementById('token').innerHTML = currentToken;
-            }
-            else {
-                // Show permission request.
-                console.log('No Instance ID token available. Request permission to generate one.');
-                // Show permission UI
-            }
-        }).catch((err) => {
-            console.log('An error occurred while retrieving token. ', err);
-        });
+navigator.serviceWorker.register('./firebase-messaging-sw.js')
+    .then((registration) => {
+        messaging.useServiceWorker(registration);
 
-    }else{
-        console.log("khong the");
-    }
-});
+        // Request permission and get token.....
+        messaging.requestPermission().then(function () {
+            return messaging.getToken();
+        }).then(function (token) {
+            console.log(token)
+            firebase.database().ref('fcmTokens').child(username).set({ token_id: token });
+        })
+    });
+
 
 messaging.onMessage((payload) => {
+    alert("ok")
     console.log('Message received. ', payload);
 });
+
+
+let token = '';
+
+function getTokenUser() {
+    return new Promise(resolve => {
+        db.ref('users/'+room).on('value',function (snapshot) {
+            const data = snapshot.val();
+            const key = Object.keys(data)
+            const value = Object.values(data)
+            key.forEach(function (value, index) {
+                if (key[index] != username){
+                    db.ref('fcmTokens/'+key[index]).on('value',(snapshot)=>{
+                        resolve(snapshot.val().token_id)
+                    })
+                }
+
+            })
+        })
+    })
+}
+
+getTokenUser().then((e)=>{
+   token = e;
+})
+
 // Gui tin nhan
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -74,6 +94,31 @@ chatForm.addEventListener('submit', (e) => {
             "seen_by_admin": true,
         },function (error) {
             if (!error){
+                console.log("vao")
+                    $.ajax({
+                        url: 'https://fcm.googleapis.com/fcm/send',
+                        method: 'POST',
+                        headers:{
+                            'Content-Type': 'application/json',
+                            'Authorization': 'key=AAAAFglIZpo:APA91bFy3YQKaUOfpuDGL28XeMvYWh8UhK3IfIYe-xyIYY6_goswE6BeZXGKZdNMSHyjXtb6RcRphGEl4fmy9BNyOfpbe8xU1wIupVxD8Izf8iPVpms9SRtU47fY4CJcF4xi1tuG223G'
+                        },
+                        data: JSON.stringify({
+                            'to':'fygU8dllhhA:APA91bGy89euuObZW3s3H_9FBMOrlF2g180sgCkTLu4MVff3i4yeo1U4z03MiQaGqL1aKfWnn6r3fDHC57Zjdn24PBvv7sDnA87uEeisN264_sf0dylP45rKnosr6mQAuifbnIsvzmP1',
+                            "notification":{
+                                "title" : "admin",
+                                "body" : msg,
+                                "click_action": "http://localhost/firebasechat/public/chat.html?username=1651120111&room=JavaScript"
+                            },
+                        }),
+                        success:function (response){
+                            debugger
+                            console.log(response)
+                        },
+                        error:function (xhr,status,error) {
+                            debugger
+                            console.log(xhr + " : " +error);
+                        }
+                    })
             }
         }
     )
@@ -90,16 +135,16 @@ chatForm.addEventListener('submit', (e) => {
                 db.ref('fcmTokens').child(username).once('value',function (snapshot){
                     console.log(snapshot.val())
                     $.ajax({
-                        url: 'https://fcm.goolge.com/fcm/send',
-                        method: "POST",
+                        url: 'https://fcm.googleapis.com/fcm/send',
+                        method: 'POST',
                         headers:{
                             'Content-Type': 'application/json',
                             'Authorization': 'key=AAAAFglIZpo:APA91bFy3YQKaUOfpuDGL28XeMvYWh8UhK3IfIYe-xyIYY6_goswE6BeZXGKZdNMSHyjXtb6RcRphGEl4fmy9BNyOfpbe8xU1wIupVxD8Izf8iPVpms9SRtU47fY4CJcF4xi1tuG223G'
                         },
                         data: JSON.stringify({
-                            'to':snapshot.val()['token_id'],
-                            'data':{
-                                'message': msg
+                            to:"f5NrppRlt1A:APA91bFOac0_Ykro6_IJscSdgGj2P2NcDWDsG1S881J44Qh9zLQkhDWkQ6kYm0pEtVg1lJWSrZKAZKZOlHNF7FdgE1KnUyx5LfyAvgXg72nbVRJVNTP7FKpuu8aSFLtOYtohxmY2bLCi",
+                            data:{
+                                message: msg
                             }
                         }),
                         success:function (response){
@@ -413,8 +458,6 @@ btnmsg.addEventListener("focus", function () {
 btnmsg.addEventListener("blur", function () {
     console.log(2);
 });
-
-console.log("ok")
 
 
 /*document.addEventListener("visibilitychange", handleVisibilityChange, false);
