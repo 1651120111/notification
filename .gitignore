@@ -1,1 +1,2 @@
-*workspace.xml
+# file: ~/.gitignore_global
+.idea
