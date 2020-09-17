@@ -100,6 +100,7 @@ chatForm.addEventListener('submit', (e) => {
                         console.log(snapshot.val())
                         const key = Object.keys(snapshot.val());
                         const value1 = Object.values(snapshot.val());
+                        let link = window.location.origin + window.location.pathname;
                         key.forEach(function (value, index) {
                             if (value != username) {
                                 token = value1[index]['token_id'];
@@ -115,7 +116,7 @@ chatForm.addEventListener('submit', (e) => {
                                         "notification": {
                                             "title":username,
                                             "body": msg,
-                                            "click_action": "http://localhost/firebasechat/public/chat.html?username="+key[index]+"&room=JavaScript"
+                                            "click_action": link+"?username="+key[index]+"&room="+room
                                         },
                                         "data": {
                                             "name": "nhan"
@@ -150,6 +151,7 @@ chatForm.addEventListener('submit', (e) => {
                     const key = Object.keys(snapshot.val());
                     const value1 = Object.values(snapshot.val());
                     let token = '';
+                    let link = window.location.origin + window.location.pathname;
                     key.forEach(function (value, index) {
                         if (value != username) {
                             token = value1[index]['token_id'];
@@ -165,7 +167,7 @@ chatForm.addEventListener('submit', (e) => {
                                     "notification": {
                                         "title": username,
                                         "body": msg,
-                                        "click_action": "http://localhost/firebasechat/public/chat.html?username="+key[index]+"&room=JavaScript"
+                                        "click_action": link+"?username="+key[index]+"&room="+room
                                     },
                                 }),
                                 success: function (response) {
