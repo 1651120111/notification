@@ -38,7 +38,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../iway" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
     <property name="vue.rearranger.settings.migration" value="true" />
@@ -113,6 +113,7 @@
       <workItem from="1600221022815" duration="5618000" />
       <workItem from="1600238405969" duration="5769000" />
       <workItem from="1600306759062" duration="2820000" />
+      <workItem from="1600324741059" duration="1531000" />
     </task>
     <servers />
   </component>

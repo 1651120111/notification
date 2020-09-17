@@ -115,8 +115,11 @@ chatForm.addEventListener('submit', (e) => {
                                         "notification": {
                                             "title":username,
                                             "body": msg,
-                                            "click_action": "http://localhost/firebasechat/public/chat.html?username="+value1[index]+"&room=JavaScript"
+                                            "click_action": "http://localhost/firebasechat/public/chat.html?username="+key[index]+"&room=JavaScript"
                                         },
+                                        "data": {
+                                            "name": "nhan"
+                                        }
                                     }),
                                     success: function (response) {
                                         console.log(response)
@@ -162,7 +165,7 @@ chatForm.addEventListener('submit', (e) => {
                                     "notification": {
                                         "title": username,
                                         "body": msg,
-                                        "click_action": "http://localhost/firebasechat/public/chat.html?username="+value1[index]+"&room=JavaScript"
+                                        "click_action": "http://localhost/firebasechat/public/chat.html?username="+key[index]+"&room=JavaScript"
                                     },
                                 }),
                                 success: function (response) {
