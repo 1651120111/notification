@@ -8,10 +8,12 @@ chat {
 -->
 
 <!-- The core Firebase JS SDK is always required and must be listed first -->
-<script src="https://www.gstatic.com/firebasejs/6.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+<link rel="stylesheet" href="public/css/style.css">
 
 <!-- include firebase database -->
-<script src="https://www.gstatic.com/firebasejs/6.6.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-database.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <script>
     // Your web app's Firebase configuration
@@ -36,16 +38,16 @@ chat {
     const date = Date.now()
 
     function sendMessage() {
-        db.ref("chatapp/"+id).on('value',function (snapshot) {
-            if (!snapshot.hasChild('time') ){
-                db.ref("chatapp/"+id).set({
+        db.ref("chatapp/" + id).on('value', function (snapshot) {
+            if (!snapshot.hasChild('time')) {
+                db.ref("chatapp/" + id).set({
                     time: date
                 })
             }
         })
         db.ref("chatapp/" + id + "/data/" + stt).set({
             _id: stt,
-            message: "hi "+stt ,
+            message: "hi " + stt,
             name: name,
             idUser: id,
             date: date,
@@ -59,34 +61,34 @@ chat {
 
 
         db.ref("chatapp/" + id + "/read").set({
-            admin:false,
-            user:true,
+            admin: false,
+            user: true,
             count_admin: 0,
             count_user: 0,
         })
 
         db.ref("chatapp/" + id + "/user").set({
-            avatar:"https://img.favpng.com/7/5/8/computer-icons-font-awesome-user-font-png-favpng-YMnbqNubA7zBmfa13MK8WdWs8.jpg",
-            id:id,
+            avatar: "https://img.favpng.com/7/5/8/computer-icons-font-awesome-user-font-png-favpng-YMnbqNubA7zBmfa13MK8WdWs8.jpg",
+            id: id,
             name: name,
             phone: "0708501835",
         })
 
-        db.ref("users/"+id).set({
-            name:name
-        },(e)=>{
-            if(!e)
+        db.ref("users/" + id).set({
+            name: name
+        }, (e) => {
+            if (!e)
                 console.log('user -id')
         })
 
         // handle user online/offline
         // Theo dõi trang thái trên trình duyệt
 
-        db.ref("chatapp/"+id).on('value',function (snapshot) {
-            if (!snapshot.hasChild('time')){
+        db.ref("chatapp/" + id).on('value', function (snapshot) {
+            if (!snapshot.hasChild('time')) {
                 console.log("ok")
-                db.ref("chatapp/"+id).update({
-                    time:Date.now()
+                db.ref("chatapp/" + id).update({
+                    time: Date.now()
                 })
             }
         })
@@ -99,7 +101,7 @@ chat {
 
     const connectedRef = db.ref('.info/connected');
 
-    function connectionUser(){
+    function connectionUser() {
         connectedRef.on('value', function (snap) {
             // snap.val() gia tri false || true
             // true: user đang kết nối
@@ -119,11 +121,12 @@ chat {
         });
     }
 
-    db.ref('chatapp/'+id).on('value',function (snapshot) {
+    db.ref('chatapp/' + id).on('value', function (snapshot) {
         const child = snapshot.hasChild('data')
-        if(!child) return false
+        if (!child) return false
         return connectionUser()
     })
+
 
 </script>
 
@@ -133,3 +136,25 @@ chat {
 </form>
 
 <ul id="messages"></ul>
+
+<div id="divtest" style="white-space: pre-line"></div>
+<div class="test" id="test" contenteditable="true" placeholder="Type something...">
+
+</div>
+
+<script>
+    document.getElementById('test').addEventListener('keypress', function (event) {
+        if (event.shiftKey) {
+            if (event.keyCode == 13) {
+
+            }
+        } else if (event.keyCode == 13){
+            let test = document.getElementById('test').innerHTML;
+            let test1 = test.replaceAll("<br>","\n");
+            console.log(test1)
+            document.getElementById('divtest').innerHTML = test1;
+            document.getElementById('test').innerHTML = '';
+            return event.preventDefault()
+        }
+    })
+</script>

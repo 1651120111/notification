@@ -54,6 +54,20 @@ span{
 	float: right !important;
 }
 
+.test[contenteditable=true] > div {
+	padding: 0;
+}
+
+.test[placeholder]:empty:before {
+	content: attr(placeholder);
+	color: #555;
+}
+
+.test{
+	padding: 2%;
+	background-color: #caece5c7;
+	margin: 1%;
+}
 .username{
 	max-width: 75%;
 	margin-left: 25%;

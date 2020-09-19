@@ -31,7 +31,6 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-
 const messaging = firebase.messaging();
 messaging.usePublicVapidKey("BE-3C-FHE14TefIg6jgrVpWyAEYmCwYjJdEgxOKq4vo6BOg4hkQMb11dpXPkYKvlmPRKZfaEsRpWlNiWgltH1a8");
 
@@ -48,12 +47,9 @@ navigator.serviceWorker.register('./firebase-messaging-sw.js')
         })
     });
 
-
 messaging.onMessage((payload) => {
-    alert("ok")
     console.log('Message received. ', payload);
 });
-
 
 let token = '';
 
@@ -79,7 +75,20 @@ getTokenUser().then((e) => {
     token = e;
 })
 
+function isKeyPressed(event){
+    let msg = document.getElementById('msg').value;
+    if (event.shiftKey && event.keyCode ==13) {
+        if (msg != ''){
+            console.log("asd")
+        } else {
+            console.log("1")
 
+            msg +="<br>" ;
+            document.getElementById('msg').value = msg;
+        }
+
+    }
+}
 // Gui tin nhan
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -113,15 +122,12 @@ chatForm.addEventListener('submit', (e) => {
                                     },
                                     data: JSON.stringify({
                                         'to': token,
-                                        "notification": {
-                                            "title":username,
+                                        "data": {
+                                            "title": username,
                                             "body": msg,
-                                            "click_action": link+"?username="+key[index]+"&room="+room,
+                                            "click_action": link + "?username=" + key[index] + "&room=" + room,
                                             "icon": "test.png"
                                         },
-                                        "data": {
-                                            "name": "nhan"
-                                        }
                                     }),
                                     success: function (response) {
                                         console.log(response)
@@ -165,10 +171,10 @@ chatForm.addEventListener('submit', (e) => {
                                 },
                                 data: JSON.stringify({
                                     to: token,
-                                    "notification": {
+                                    "data": {
                                         "title": username,
                                         "body": msg,
-                                        "click_action": link+"?username="+key[index]+"&room="+room,
+                                        "click_action": link + "?username=" + key[index] + "&room=" + room,
                                         "icon": "test.png"
                                     },
                                 }),
@@ -485,7 +491,6 @@ btnmsg.addEventListener("focus", function () {
 btnmsg.addEventListener("blur", function () {
     console.log(2);
 });
-
 
 /*document.addEventListener("visibilitychange", handleVisibilityChange, false);
 
